@@ -187,7 +187,7 @@ def get_model_zoo_version_for_arch(hailo_arch: str) -> tuple[str, str]:
     """Get Model Zoo version and download architecture for a given Hailo architecture.
     
     For H10: Derives from HailoRT version (5.1.x -> v5.1.0, 5.2.x -> v5.2.0)
-    For H8/H8L: Uses static mapping v2.17.0
+    For H8/H8L: Derives from HailoRT version (4.23.x -> v2.17.0, 4.24.x -> v2.19.0)
     """
     download_arch = hailo_arch
     
@@ -213,8 +213,15 @@ def get_model_zoo_version_for_arch(hailo_arch: str) -> tuple[str, str]:
                 # For newer versions, use the exact HailoRT version
                 model_zoo_version = f"v{hailort_version}"
         else:
-            # H8/H8L uses the fixed Model Zoo release
-            model_zoo_version = "v2.17.0"
+            # H8/H8L: HailoRT 4.24.x uses v2.19.0, older releases use v2.17.0
+            hailort_version = os.getenv(
+                HAILORT_VERSION_KEY,
+                auto_detect_hailort_version()
+            ) or ""
+            if hailort_version.startswith("4.24"):
+                model_zoo_version = "v2.19.0"
+            else:
+                model_zoo_version = "v2.17.0"
     
     # Validate the version
     if hailo_arch == HAILO10H_ARCH and model_zoo_version not in VALID_H10_MODEL_ZOO_VERSION:

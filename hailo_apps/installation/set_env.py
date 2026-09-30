@@ -173,15 +173,18 @@ def _get_model_zoo_version(hailo_arch: str, hailort_version: str = "") -> str:
     """Get Model Zoo version based on Hailo architecture and HailoRT version.
     
     For H10: Derives from HailoRT version (5.1.x -> v5.1.0, 5.2.x -> v5.2.0)
-    For H8/H8L: Uses static mapping v2.17.0
+    For H8/H8L: Derives from HailoRT version (4.23.x -> v2.17.0, 4.24.x -> v2.19.0)
     """
     if hailo_arch == HAILO10H_ARCH:
         # H10: Derive from HailoRT version
-        if hailort_version.startswith("5.2"):
-            return "v5.2.0"
+        for mz_version in ("v5.4.0", "v5.3.0", "v5.2.0"):
+            if hailort_version.startswith(mz_version[1:4]):
+                return mz_version
         return "v5.1.0"  # Default for 5.1.x
-    # H8/H8L always uses v2.17.0
-    return "v2.17.0"
+    # H8/H8L: Derive from HailoRT version
+    if hailort_version.startswith("4.24"):
+        return "v2.19.0"
+    return "v2.17.0"  # Default for 4.23.x
 
 
 def _get_hailo_arch() -> str | None:

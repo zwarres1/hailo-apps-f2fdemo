@@ -19,7 +19,7 @@ dependencies = [
     # Core dependencies
     "numpy",
     "setproctitle",
-    "opencv-python<=4.10.0.84",  # Pin to avoid Qt font warnings in newer versions
+    "opencv-python==4.10.0.84",  # Pin: newer versions have Qt font warnings; older ones are built for NumPy 1.x and break with NumPy 2
     "python-dotenv",
     "pyyaml",
     "Pillow",
