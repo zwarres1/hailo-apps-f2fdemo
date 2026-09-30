@@ -9,7 +9,7 @@ yolo_hailortpp_sources = [
 shared_library('yolo_hailortpp_postprocess',
     yolo_hailortpp_sources,
     include_directories : rapidjson_inc,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -38,7 +38,7 @@ yolov8pose_postprocess_sources = [
 ]
 shared_library('yolov8pose_postprocess',
     yolov8pose_postprocess_sources,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -53,7 +53,7 @@ yolov5seg_post_sources = [
 
 shared_library('yolov5seg_postprocess',
     yolov5seg_post_sources,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -68,7 +68,7 @@ depth_postprocess_sources = [
 ]
 shared_library('depth_postprocess',
     depth_postprocess_sources,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -82,7 +82,7 @@ face_align_post_sources = [
 ]
 
 # Use static OpenCV if available, otherwise fall back to TAPPAS dynamic OpenCV
-face_align_deps = [postprocess_dep]
+face_align_deps = [postprocess_dep, tappas_common_dep]
 if opencv_dep.found()
     face_align_deps += opencv_dep
 endif
@@ -107,7 +107,7 @@ scrfd_post_sources = [
 
 shared_library('scrfd',
     scrfd_post_sources,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -122,7 +122,7 @@ arcface_post_sources = [
 
 shared_library('face_recognition_post',
     arcface_post_sources,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -136,7 +136,7 @@ vms_croppers_sources = [
 ]
 
 # Use static OpenCV if available
-vms_croppers_deps = [postprocess_dep]
+vms_croppers_deps = [postprocess_dep, tappas_common_dep]
 if opencv_dep.found()
     vms_croppers_deps += opencv_dep
 endif
@@ -157,12 +157,12 @@ shared_library('vms_croppers',
 ################################################
 
 repvgg_reid_sources = [
-    'repvgg_reid.cpp'
+    'repvgg_reid.cpp',
 ]
 shared_library('repvgg_reid_postprocess',
     repvgg_reid_sources,
     include_directories : rapidjson_inc,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -176,7 +176,7 @@ all_detections_cropper_sources = [
 ]
 
 # Use static OpenCV if available
-all_detections_cropper_deps = [postprocess_dep]
+all_detections_cropper_deps = [postprocess_dep, tappas_common_dep]
 if opencv_dep.found()
     all_detections_cropper_deps += opencv_dep
 endif
@@ -199,7 +199,7 @@ mobilenet_ssd_sources = [
 shared_library('mobilenet_ssd_postprocess',
     mobilenet_ssd_sources,
     include_directories : rapidjson_inc,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
@@ -214,11 +214,11 @@ clip_sources = [
 shared_library('clip_postprocess',
     clip_sources,
     include_directories : rapidjson_inc,
-    dependencies : postprocess_dep,
+    dependencies : [postprocess_dep, tappas_common_dep],
     gnu_symbol_visibility : 'default',
     install: true,
     install_dir: '/usr/local/hailo/resources/so',
-)    
+)
 
 ################################################
 # CLIP CROPPERS SOURCES
@@ -228,7 +228,7 @@ clip_croppers_sources = [
 ]
 
 # Use static OpenCV if available
-clip_croppers_deps = [postprocess_dep]
+clip_croppers_deps = [postprocess_dep, tappas_common_dep]
 if opencv_dep.found()
     clip_croppers_deps += opencv_dep
 endif
@@ -251,7 +251,7 @@ ocr_postprocess_sources = [
 ]
 
 # Use static OpenCV if available
-ocr_postprocess_deps = [postprocess_dep]
+ocr_postprocess_deps = [postprocess_dep, tappas_common_dep]
 if opencv_dep.found()
     ocr_postprocess_deps += opencv_dep
 endif

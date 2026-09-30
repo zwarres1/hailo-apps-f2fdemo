@@ -38,6 +38,18 @@ if postprocess_dep.found()
     rapidjson_inc_dir = postprocess_dep.get_variable(pkgconfig: 'rapidjson_includedir', default_value: '')
     rapidjson_inc = include_directories(rapidjson_inc_dir, is_system: true)
 
+    # TAPPAS ships common utility implementations (tensors, math, nms) as source files.
+    # Build them once as a static convenience library so all postprocess targets can link them.
+    tappas_inc_dir = postprocess_dep.get_variable(pkgconfig: 'tappas_includedir', default_value: '/usr/include/hailo/tappas')
+    tappas_common_lib = static_library('tappas_common',
+        tappas_inc_dir / 'common' / 'tensors.cpp',
+        tappas_inc_dir / 'common' / 'math.cpp',
+        tappas_inc_dir / 'common' / 'nms.cpp',
+        dependencies : postprocess_dep,
+        pic : true,
+    )
+    tappas_common_dep = declare_dependency(link_with : tappas_common_lib)
+
     # Get the version to determine static vs dynamic linking strategy
     pkg_name = 'hailo-tappas-core'
     pkg_version_result = run_command('pkg-config', '--modversion', pkg_name, check: false)
@@ -45,10 +57,10 @@ if postprocess_dep.found()
         pkg_name = 'hailo_tappas'
         pkg_version_result = run_command('pkg-config', '--modversion', pkg_name, check: false)
     endif
-    
+
     tappas_version = pkg_version_result.returncode() == 0 ? pkg_version_result.stdout().strip() : 'unknown'
     message('Found hailo-tappas-core version: @0@'.format(tappas_version))
-    
+
     # Determine if we should use static libraries (5.2.0+) or dynamic (5.1.0 and earlier)
     use_static = false
     if tappas_version != 'unknown'
@@ -60,11 +72,15 @@ if postprocess_dep.found()
             use_static = (major > 5) or (major == 5 and minor >= 2)
         endif
     endif
-    
+
     # Check if libhailo_opencv_utils.so exists (it may be missing on some systems like RPi)
-    libhailo_opencv_utils_path = '/usr/lib/aarch64-linux-gnu/libhailo_opencv_utils.so'
-    libhailo_opencv_utils_exists = run_command('test', '-f', libhailo_opencv_utils_path, check: false).returncode() == 0
-    
+    # Use ldconfig to find the library regardless of architecture (x86_64, aarch64, etc.)
+    libhailo_opencv_utils_exists = run_command('ldconfig', '-p', check: false).stdout().contains('libhailo_opencv_utils.so')
+    if not libhailo_opencv_utils_exists
+        # Fallback: check common library paths
+        libhailo_opencv_utils_exists = run_command('sh', '-c', 'find /usr/lib -name "libhailo_opencv_utils.so" -quit 2>/dev/null | grep -q .', check: false).returncode() == 0
+    endif
+
     if not libhailo_opencv_utils_exists
         message('⚠️  libhailo_opencv_utils.so not found, filtering it out from linker command')
         # Extract libraries from pkg-config and filter out libhailo_opencv_utils.so
@@ -76,7 +92,7 @@ if postprocess_dep.found()
             message('Using dynamic libraries for tappas-core @0@'.format(tappas_version))
             pkg_libs_result = run_command('pkg-config', '--libs', pkg_name, check: false)
         endif
-        
+
         if pkg_libs_result.returncode() == 0
             pkg_libs_str = pkg_libs_result.stdout().strip()
             # Split by spaces, handling multiple spaces
@@ -87,7 +103,7 @@ if postprocess_dep.found()
                     filtered_libs += lib
                 endif
             endforeach
-            
+
             # Create a custom dependency with filtered libraries
             # Preserve the original dependency's properties (include dirs, compile args) but override link_args
             # This way we keep all the include directories from the original dependency
@@ -106,7 +122,7 @@ if postprocess_dep.found()
         if pkg_libs_result.returncode() == 0
             pkg_libs_str = pkg_libs_result.stdout().strip()
             pkg_libs_list = pkg_libs_str.split()
-            
+
             # Preserve the original dependency's properties but override link_args with static libs
             postprocess_dep = declare_dependency(
                 dependencies: postprocess_dep,
